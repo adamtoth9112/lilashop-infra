@@ -20,11 +20,20 @@ spec:
             - containerPort: {{ .Values.service.port }}
           env:
             - name: POSTGRES_DB
-              value: lilashop_db
+              valueFrom:
+                secretKeyRef:
+                  name: lilashop-db-secrets
+                  key: POSTGRES_DB
             - name: POSTGRES_USER
-              value: lilashop_user
+              valueFrom:
+                secretKeyRef:
+                  name: lilashop-db-secrets
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
-              value: lilashop_password
+              valueFrom:
+                secretKeyRef:
+                  name: lilashop-db-secrets
+                  key: POSTGRES_PASSWORD
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
