@@ -1,0 +1,14 @@
+image:
+  repository: postgres
+  tag: 15.2
+service:
+  type: ClusterIP
+  port: 5432
+resources:
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+persistence:
+  enabled: true
+  size: 1Gi
+initScriptPath: "/docker-entrypoint-initdb.d/schema.sql"
