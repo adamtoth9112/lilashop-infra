@@ -1,20 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres
+  name: database
   namespace: dev-environment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: {{ include "database.name" . }}
+      component: database
   template:
     metadata:
       labels:
-        app: postgres
+        app: {{ include "database.name" . }}
+        component: database
     spec:
       containers:
-        - name: postgres
+        - name: database
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: {{ .Values.service.port }}

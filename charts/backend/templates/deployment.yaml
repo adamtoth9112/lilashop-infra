@@ -17,13 +17,13 @@ spec:
     spec:
       containers:
         - name: backend
-          image: lcadam/lilashop-backend:latest
-          imagePullPolicy: IfNotPresent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              value: r2dbc:postgresql://postgres:5432/lilashop_db
+              value: r2dbc:postgresql://database-service:5432/lilashop_db
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:

@@ -1,0 +1,21 @@
+replicaCount: 1
+
+image:
+  repository: lcadam/lilashop-frontend
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  hostname: lilashop.com
+  path: /
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+env:
+  API_PROXY_URL: http://backend-service:8080

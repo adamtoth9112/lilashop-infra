@@ -1,6 +1,8 @@
 image:
-  repository: lilashop_backend
+  repository: lcadam/lilashop-backend
   tag: latest
+  pullPolicy: IfNotPresent
+  
 service:
   type: ClusterIP
   port: 8080
