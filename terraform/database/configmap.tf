@@ -5,5 +5,6 @@ resource "kubernetes_config_map" "database_init_scripts" {
   }
   data = {
     "schema.sql" = file("${path.module}/init-scripts/schema.sql")
+    "seed.sql"   = file("${path.module}/init-scripts/seed.sql")
   }
 }
