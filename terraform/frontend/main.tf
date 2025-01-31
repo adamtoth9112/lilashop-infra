@@ -26,15 +26,23 @@ resource "kubernetes_deployment" "frontend" {
           port {
             container_port = var.frontend_port
           }
-          env {
-            name  = "REACT_APP_API_BASE_URL"
-            value = var.api_base_url
+          volume_mount {
+            name       = "nginx-config"
+            mount_path = "/etc/nginx/conf.d/default.conf"
+            sub_path   = "default.conf"
+          }
+        }
+        volume {
+          name = "nginx-config"
+          config_map {
+            name = kubernetes_config_map.frontend_nginx_config.metadata[0].name
           }
         }
       }
     }
   }
 }
+
 
 resource "kubernetes_service" "frontend_service" {
   metadata {
@@ -54,29 +62,72 @@ resource "kubernetes_service" "frontend_service" {
   }
 }
 
-resource "kubernetes_ingress" "frontend_ingress" {
+resource "kubernetes_ingress_v1" "frontend_ingress" {
   metadata {
     name      = "frontend-ingress"
     namespace = var.namespace
     annotations = {
       "nginx.ingress.kubernetes.io/rewrite-target" = "/"
       "nginx.ingress.kubernetes.io/ssl-redirect"   = "false"
+      "nginx.ingress.kubernetes.io/force-ssl-redirect" = "false"
     }
   }
   spec {
+    ingress_class_name = "nginx"
     rule {
       host = "lilashop.com"
       http {
         path {
+          path      = "/"
+          path_type = "Prefix"
           backend {
-            service_name = kubernetes_service.frontend_service.metadata[0].name
-            service_port = 80
+            service {
+              name = kubernetes_service.frontend_service.metadata[0].name
+              port {
+                number = 80
+              }
+            }
           }
-          path = "/"
         }
       }
     }
   }
 }
+
+
+resource "kubernetes_config_map" "frontend_nginx_config" {
+  metadata {
+    name      = "frontend-nginx-config"
+    namespace = var.namespace
+  }
+  data = {
+    "default.conf" = <<EOF
+server {
+    listen 80;
+
+    # Serve React static files
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Handle React routing (SPA)
+    location / {
+        try_files $uri /index.html;
+    }
+
+    # Forward API requests to the backend **INSIDE K8s** (No more reverse proxy)
+    location /api/ {
+        proxy_pass http://backend-service:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Handle 404 errors by serving index.html
+    error_page 404 /index.html;
+}
+EOF
+  }
+}
+
 
 
