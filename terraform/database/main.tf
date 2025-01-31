@@ -11,9 +11,3 @@ provider "kubernetes" {
   config_path    = "~/.kube/config"
   config_context = "minikube"  # Adjust if using a different context
 }
-
-resource "kubernetes_namespace" "lilashop" {
-  metadata {
-    name = var.namespace
-  }
-}
